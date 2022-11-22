@@ -1,8 +1,0 @@
-apiVersion: kopf.dev/v1
-kind: FlaskOperator
-metadata:
-  name: flaskop1
-spec:
-  image: ahebibovic/flask-hello
-  port: 5000
-  replicas: 2

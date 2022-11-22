@@ -1,7 +1,8 @@
 import kopf
 import kubernetes.client
-from kubernetes.client.rest import ApiException
 import yaml
+from kubernetes.client.rest import ApiException
+
 
 @kopf.on.create("flaskoperators")
 def create_fn(spec, **kwargs):
@@ -15,6 +16,10 @@ def create_fn(spec, **kwargs):
     image = spec.get('image', None)
     if not image:
         raise kopf.PermanentError(f"Image must be set. Got {image!r}.")
+
+    port = spec.get('port', None)
+    if not port:
+        raise kopf.PermanentError(f"Port must be set. Got {port!r}.")
 
     doc = yaml.safe_load(f"""
               apiVersion: apps/v1
@@ -37,22 +42,18 @@ def create_fn(spec, **kwargs):
                     - name: {name}
                       image: {image}
                       ports:
-                      - containerPort: {spec.get('port', 5000)}
+                      - containerPort: {port}
               """)
 
     kopf.adopt(doc)
 
     api = kubernetes.client.AppsV1Api()
+    
     try:
       depl = api.create_namespaced_deployment(namespace=doc['metadata']['namespace'], body=doc)
       return {'children': [depl.metadata.uid]}
     except ApiException as e:
-      print("Exception when calling AppsV1Api->create_namespaced_deployment: %s\n" % e)
-      
-@kopf.on.delete('flaskoperators')
-def delete_fn(**kwargs):
-  print(kwargs)
-
+      print("Exception when calling create_namespaced_deployment: %s\n" % e)
 
   
     

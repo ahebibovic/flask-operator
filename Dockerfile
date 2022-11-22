@@ -6,4 +6,4 @@ RUN pip install kopf kubernetes
 
 COPY . .
 
-CMD ["kopf", "run","deploy.yaml","--verbose"]
+CMD ["kopf", "run","handlers.py","--verbose"]
